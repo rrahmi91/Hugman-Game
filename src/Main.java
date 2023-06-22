@@ -79,28 +79,29 @@ public class Main {
 
     public static void printPaternGame(int error) {
         switch (error) {
-            case 0 -> System.out.println(readFile(".\\Files\\hugmanStartPatern.txt"));
-            case 1 -> System.out.println(readFile(".\\Files\\hugmanFirstErrorPatern.txt"));
-            case 2 -> System.out.println(readFile(".\\Files\\hugmanSecondErrorPatern.txt"));
-            case 3 -> System.out.println(readFile(".\\Files\\hugmanThirdErrorPatern.txt"));
-            case 4 -> System.out.println(readFile(".\\Files\\hugmanFoutrthErrorPatern.txt"));
-            case 5 -> System.out.println(readFile(".\\Files\\hugmanFifthErrorPatern.txt"));
-            case 6 -> System.out.println(readFile(".\\Files\\hugmanSixthErrorPatern.txt"));
-            case 7 -> System.out.println(readFile(".\\Files\\hugmanSeventhErrorPatern.txt"));
+
+            case 0 -> System.out.println(readFile(".\\Files\\hangmanStartPatern.txt"));
+            case 1 -> System.out.println(readFile(".\\Files\\hangmanFirstErrorPatern.txt"));
+            case 2 -> System.out.println(readFile(".\\Files\\hangmanSecondErrorPatern.txt"));
+            case 3 -> System.out.println(readFile(".\\Files\\hangmanThirdErrorPatern.txt"));
+            case 4 -> System.out.println(readFile(".\\Files\\hangmanFoutrthErrorPatern.txt"));
+            case 5 -> System.out.println(readFile(".\\Files\\hangmanFifthErrorPatern.txt"));
+            case 6 -> System.out.println(readFile(".\\Files\\hangmanSixthErrorPatern.txt"));
+            case 7 -> System.out.println(readFile(".\\Files\\hangmanSeventhErrorPatern.txt"));
         }
     }
 
     //-------------------------------------------------------------------------------------------------------------
     public static String creatingHiddenTextWithTheLengthOfTheText(String text) {
-        String hidenText = "";
+        StringBuilder hidenText = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == ' ') {
-                hidenText = hidenText + " ";
+                hidenText.append(" ");
             } else {
-                hidenText = hidenText + "_";
+                hidenText.append("_");
             }
         }
-        return hidenText;
+        return hidenText.toString();
     }
 
     public static String searchSymbolInText(String cityName, String hidenCityName, char charFromUser) {
@@ -122,6 +123,7 @@ public class Main {
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == lowerCaseConvertedChar) {
                 match = true;
+                break;
             }
         }
         return match;
