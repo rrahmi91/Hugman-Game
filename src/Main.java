@@ -8,6 +8,16 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
+
+    public static String[] readPlayersNames(Scanner scanner) {
+        String[] playerNamesArray = new String[2];
+        for (int i = 1; i <= playerNamesArray.length; i++) {
+            System.out.println("\nМоля въведете име на ирач " + i);
+            playerNamesArray[i - 1] = scanner.nextLine();
+        }
+        return playerNamesArray;
+    }
+
     public static String[] citySelection(int rowNumber) {
         String excelFilePatch = ".\\Files\\CityInBulgaria.xlsx";
 
@@ -91,7 +101,6 @@ public class Main {
         }
     }
 
-    //-------------------------------------------------------------------------------------------------------------
     public static String creatingHiddenTextWithTheLengthOfTheText(String text) {
         StringBuilder hidenText = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
@@ -105,23 +114,40 @@ public class Main {
     }
 
     public static String searchSymbolInText(String cityName, String hidenCityName, char charFromUser) {
-        String text = cityName.toLowerCase();
-        char lowerCaseConvertedChar = Character.toLowerCase(charFromUser);
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == lowerCaseConvertedChar) {
+        String cityNameLowerCase = cityName.toLowerCase();
+        char charFromUserLowerCase = Character.toLowerCase(charFromUser);
+        boolean foundBefore = checkForTypedCharacterFoundBefore(hidenCityName,charFromUser);
+
+        for (int i = 0; i < cityNameLowerCase.length(); i++) {
+            if (cityNameLowerCase.charAt(i) == charFromUserLowerCase && !foundBefore) {
                 hidenCityName = hidenCityName.substring(0, i) + cityName.charAt(i) + hidenCityName.substring(i + 1);
             }
         }
         return hidenCityName;
     }
 
+    public static boolean checkForTypedCharacterFoundBefore(String hidenCityName, char charFromUser) {
+        char charFromUserLowerCase = Character.toLowerCase(charFromUser);
+        String hidenCityNameLowerCase = hidenCityName.toLowerCase();
+
+        boolean foundBefore = false;
+        for (int i = 0; i < hidenCityName.length(); i++) {
+            if (hidenCityNameLowerCase.charAt(i) == charFromUserLowerCase) {
+                System.out.println("Въведохте същевтвуващ съмвол");
+                foundBefore = true;
+                break;
+            }
+        }
+        return foundBefore;
+    }
+
     public static boolean characterMatchingCheck(String cityName, char charFromUser) {
-        String text = cityName.toLowerCase();
-        char lowerCaseConvertedChar = Character.toLowerCase(charFromUser);
+        String cityNameLowerCase = cityName.toLowerCase();
+        char charFromUserLowerCase = Character.toLowerCase(charFromUser);
         boolean match = false;
 
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == lowerCaseConvertedChar) {
+        for (int i = 0; i < cityNameLowerCase.length(); i++) {
+            if (cityNameLowerCase.charAt(i) == charFromUserLowerCase) {
                 match = true;
                 break;
             }
@@ -129,58 +155,69 @@ public class Main {
         return match;
     }
 
-    public static char readFormUser(Scanner scanner, String userName) {
-        System.out.println("\n" + userName + " въведете символ: ");
-        String readSymbol = scanner.next();
-        return readSymbol.charAt(0);
+    public static boolean validateInputFromUser(String inputFromUser) {
+        boolean validInput = false;
+        if (inputFromUser.length() < 2) {
+            int asciValue = inputFromUser.charAt(0);
+            if (asciValue > 1039 && asciValue < 1104 && inputFromUser.charAt(0)!='_') {
+                validInput = true;
+            }
+        }
+        return validInput;
     }
 
-    //------------------------------------------Start----------------------------
-    public static String[] readPlayersNames(Scanner scanner) {
-        String[] playerNamesArray = new String[2];
-        for (int i = 1; i <= playerNamesArray.length; i++) {
-            System.out.println("\nМоля въведете име на ирач " + i);
-            playerNamesArray[i - 1] = scanner.nextLine();
+    public static char readFormUser(Scanner scanner, String userName) {
+        String readSymbol=null;
+        for (int i = 3; i >= 1; i--) {
+            System.out.println("\n" + userName + " въведете символ: ");
+            readSymbol = scanner.next();
+            if(validateInputFromUser(readSymbol)){
+                break;
+            }else{
+                System.out.println("\n" + userName + " въведохте невалиден вход оставащти опити "+ (i-1));
+            }
         }
-        return playerNamesArray;
+        return readSymbol.charAt(0);
     }
 
     public static void gameLoop(Scanner scanner, String cityName) {
 
-        String[] Pleyers = readPlayersNames(scanner);
+        String[] players = readPlayersNames(scanner);
         String hidenText = creatingHiddenTextWithTheLengthOfTheText(cityName);
         System.out.println(cityName);
         int ErrorCount = 0;
-
+        int pleyerSelector = 0;
         while (!hidenText.equals(cityName)) {
-            int i = 0;
-            while (i < Pleyers.length) {
-                printPaternGame(ErrorCount);
-                System.out.println(hidenText);
-                char ch = readFormUser(scanner, Pleyers[i]);
-                hidenText = searchSymbolInText(cityName, hidenText, ch);
+            printPaternGame(ErrorCount);
+            System.out.println(hidenText);
+            char ch = readFormUser(scanner, players[pleyerSelector]);
+            hidenText = searchSymbolInText(cityName, hidenText, ch);
 
-                if (!characterMatchingCheck(cityName, ch)) {
-                    i=(i == 1) ? 0 : 1;
-                    ErrorCount++;/////Провери защо еррор следващия цикъл броиии
-                }
+            boolean symbolFoundBefore = checkForTypedCharacterFoundBefore(hidenText,ch);
+            boolean characterMatching = characterMatchingCheck(cityName, ch);
+            if (!characterMatching && !symbolFoundBefore) {
 
-                if (hidenText.equals(cityName)) {
-                    System.out.println("\n" + Pleyers[i] + " ти печелиш честито");
-                    break;
-                } else if (ErrorCount>=8) {
-                    System.out.println("\n" + Pleyers[i] + " ти губиш");
-                    break;
-                }
+                pleyerSelector = (pleyerSelector == 1) ? 0 : 1;
+                ErrorCount++;
+            }
+
+            String messageEndGame = " е търсената дума.!";
+            if (hidenText.equals(cityName)) {
+                System.out.println(cityName + messageEndGame);
+                System.out.println("\n" + players[pleyerSelector] + "\u001B[32m ти печелиш честито\u001B[0m");
+                break;
+            } else if (ErrorCount >= 7) {
+                System.out.println(cityName + messageEndGame);
+                System.out.println("\n" + players[pleyerSelector] + "\u001B[31m ти губиш \u001B[0m");
+                break;
             }
         }
-
     }
-
 
     public static void main(String[] args) {
         Scanner scanner=new Scanner(System.in);
         String cityName=extractOnlyCityNameFromDataArray();
         gameLoop(scanner,cityName);
+
     }
 }
