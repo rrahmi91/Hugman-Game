@@ -79,15 +79,32 @@ public class Main {
     }
 
     public static String[][] readPlayersNames(Scanner scanner) {
-        String[][] playerDataMatrix = new String[2][2];
-        String initialScore = "0";
+        String[][] playerDataMatrix = {{"Player1", "0"},
+                {"Player2", "0"}};
         for (int i = 1; i <= playerDataMatrix.length; i++) {
-            System.out.println("\nМоля въведете име на ирач " + i);
-            playerDataMatrix[i - 1][0] = scanner.nextLine();
-            playerDataMatrix[i - 1][1] = initialScore;
+            playerDataMatrix[i - 1][0] = checkUserNameInput(i, scanner, playerDataMatrix);
         }
 
         return playerDataMatrix;
+    }
+
+    public static String checkUserNameInput(int gamerNumber, Scanner scanner, String[][] userData) {
+        System.out.println("\nМоля въведете име на ирач " + gamerNumber);
+        userData[gamerNumber - 1][0] = scanner.nextLine();
+        while (true) {
+            if (userData[gamerNumber - 1][0].trim().isEmpty()) {
+                System.out.println("\u001B[31mГрешка: Невалидно име на играч " + gamerNumber + " \u001B[0m");
+                System.out.println("\nМоля въведете име на ирач " + gamerNumber);
+                userData[gamerNumber - 1][0] = scanner.nextLine();
+            } else if (userData[0][0].equals(userData[1][0])) {
+                System.out.println("\u001B[31mГрешка: Това име вече съществува.!\u001B[0m");
+                System.out.println("\nМоля въведете име на ирач " + gamerNumber);
+                userData[gamerNumber - 1][0] = scanner.nextLine();
+            } else {
+                break;
+            }
+        }
+        return userData[gamerNumber - 1][0];
     }
 
     public static String readFile(String filePatch) {
