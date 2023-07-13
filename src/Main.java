@@ -3,6 +3,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.sound.midi.Soundbank;
 import java.io.*;
 import java.util.InputMismatchException;
 import java.util.Random;
@@ -62,8 +63,8 @@ public class Main {
         return cityData;
     }
 
-    public static String extractOnlyCityNameFromDataArray(String[][] citiesData) {
-        return randomCitySelection(citiesData)[0];
+    public static String[]getCityData(String [][] citiesData){
+        return randomCitySelection(citiesData);
     }
 
     public static String creatingHiddenTextWithTheLengthOfTheText(String text) {
@@ -160,13 +161,13 @@ public class Main {
         switch (error) {
 
             case 0 -> System.out.println(readFile(".\\Files\\hangmanStartPatern.txt"));
-            case 1 -> System.out.println(readFile(".\\Files\\hangmanFirstErrorPatern.txt"));
-            case 2 -> System.out.println(readFile(".\\Files\\hangmanSecondErrorPatern.txt"));
-            case 3 -> System.out.println(readFile(".\\Files\\hangmanThirdErrorPatern.txt"));
-            case 4 -> System.out.println(readFile(".\\Files\\hangmanFoutrthErrorPatern.txt"));
-            case 5 -> System.out.println(readFile(".\\Files\\hangmanFifthErrorPatern.txt"));
-            case 6 -> System.out.println(readFile(".\\Files\\hangmanSixthErrorPatern.txt"));
-            case 7 -> System.out.println(readFile(".\\Files\\hangmanSeventhErrorPatern.txt"));
+            case 1 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanFirstErrorPatern.txt"))+"\u001B[0m");
+            case 2 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanSecondErrorPatern.txt"))+"\u001B[0m");
+            case 3 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanThirdErrorPatern.txt"))+"\u001B[0m");
+            case 4 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanFoutrthErrorPatern.txt"))+"\u001B[0m");
+            case 5 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanFifthErrorPatern.txt"))+"\u001B[0m");
+            case 6 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanSixthErrorPatern.txt"))+"\u001B[0m");
+            case 7 -> System.out.println("\u001B[31m"+(readFile(".\\Files\\hangmanSeventhErrorPatern.txt"))+"\u001B[0m");
         }
     }
 
@@ -191,6 +192,8 @@ public class Main {
                 break;
             } else {
                 System.out.println("\n" + userName + " въведохте невалиден вход оставащти опити " + (i - 1));
+                System.out.println("\u001B[42m\033[3mМоля използвайте само:\033[0m\u001B[0m А а Б б В в Г г Д д Е е Ж ж З з И и Й й К к Л л М м Н н О о П пР р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ь ь Ю ю Я я\n");
+                System.out.println("\u001B[41m\033[3mНе валидни входове:\033[0m\u001B[0m 0 1 2 3 4 5 6 7 8 9  ! \" № % & ' ( ) * + , - . / : ; < = > ? @ [ \\ ] ^ _ { | } ~");
             }
         }
 
@@ -240,10 +243,19 @@ public class Main {
 
         return match;
     }
+    public static void printInfoData(String []cityData){
+        String cityName = cityData[0];
+        System.out.println("-------------------------------------------------------------------------------------------------------");
+        String messageEndGame = " е търсения град.!";
+        System.out.println(cityName + messageEndGame);
+        System.out.println("\u001B[1m\u001B[47m\u001B[30mВ град "+ cityName+ " живеят общо " + cityData[1]+" души, от които са "+cityData[2]+" мъже и "+cityData[3]+" жени.\033[0m\u001B[0m");
+        System.out.println("-------------------------------------------------------------------------------------------------------");
+    }
 
-    public static String gameLoop(String[][] players, Scanner scanner, String cityName,byte numberOfPlayers) {
+    public static String gameLoop(String[][] players, Scanner scanner, String [] cityData,byte numberOfPlayers) {
         int errorCount = 0;
         int pleyerSelector = 0;
+        String cityName = cityData[0];
         System.out.println(cityName);
         String hidenText = creatingHiddenTextWithTheLengthOfTheText(cityName);
         String winnerName = "";
@@ -255,19 +267,18 @@ public class Main {
 
             boolean symbolFoundBefore = checkForTypedCharacterFoundBefore(hidenText, ch);
             if (symbolFoundBefore) {
-                System.out.println("Въведохте същевтвуващ символ");
+                System.out.println("\u001B[33mВъведохте същевтвуващ символ\u001B[0m");
             }
 
             hidenText = searchSymbolInText(cityName, hidenText, ch);
-            String messageEndGame = " е търсения град.!";
             if (hidenText.equals(cityName)) {
-                System.out.println(cityName + messageEndGame);
+                printInfoData(cityData);
                 System.out.println("\n" + players[pleyerSelector][0] + "\u001B[32m ти печелиш този рунд честито!!!\u001B[0m\n");
                 winnerName = players[pleyerSelector][0];
                 break;
             } else if (errorCount >= 6) {
                 printPaternGame(errorCount + 1);
-                System.out.println(cityName + messageEndGame);
+                printInfoData(cityData);
                 System.out.println("\n" + players[pleyerSelector][0] + "\u001B[31m ти губиш този рунд.!!!\u001B[0m\n");
                 winnerName = null;
                 break;
@@ -314,12 +325,12 @@ public class Main {
         return gameContinues;
     }
 
-    public static void runHangmanGame(Scanner scanner, String[][] cityData, byte numberOfPlayers) {
+    public static void runHangmanGame(Scanner scanner, String[][] citiesData, byte numberOfPlayers) {
         String[][] players = readPlayersNames(scanner, numberOfPlayers);
         String[][] score;
         while (true) {
-            String cityName = extractOnlyCityNameFromDataArray(cityData);
-            String roundWinner = gameLoop(players, scanner, cityName,numberOfPlayers);
+            String[] cityData = getCityData(citiesData);
+            String roundWinner = gameLoop(players, scanner, cityData,numberOfPlayers);
             score = saveScore(roundWinner, players);
             boolean gameContinuation = promptForGameContinuation(scanner);
             if (!gameContinuation) {
@@ -369,8 +380,9 @@ public class Main {
     public static void printMatrix(String[][] matrix, byte numberOfPlayers) {
         for (int i = 0; i < numberOfPlayers; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
-                System.out.print(matrix[i][j] + "**");
+                System.out.print(matrix[i][j] + " ");
             }
+            System.out.print("точки общо. ");
             System.out.println();
         }
     }
