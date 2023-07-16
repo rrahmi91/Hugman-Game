@@ -3,14 +3,13 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import javax.sound.midi.Soundbank;
 import java.io.*;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
-    public static String[][] readFromExel() {
+    public static XSSFSheet readSheetFromExcel() {
         String excelFilePatch = ".\\Files\\CityInBulgaria.xlsx";
         FileInputStream inputStream = null;
         try {
@@ -33,12 +32,20 @@ public class Main {
         XSSFSheet sheet = null;
         if (workbook != null) {
             sheet = workbook.getSheetAt(0);
+            try {
+                workbook.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
+        return sheet;
+    }
+
+    public static String[][] createArrayFromSheet(XSSFSheet sheet) {
         int cols = sheet != null ? sheet.getRow(1).getLastCellNum() : 0;
         int lastRow = sheet != null ? sheet.getLastRowNum() : 0;
         String[][] arrayOut = new String[lastRow + 1][cols];
-
         for (int i = 0; i <= lastRow; i++) {
             for (int j = 0; j < cols; j++) {
                 XSSFRow row = sheet.getRow(i);
@@ -63,7 +70,7 @@ public class Main {
         return cityData;
     }
 
-    public static String[]getCityData(String [][] citiesData){
+    public static String[] getCityData(String[][] citiesData) {
         return randomCitySelection(citiesData);
     }
 
@@ -79,16 +86,17 @@ public class Main {
 
         return hidenText.toString();
     }
-    public static void printMenu(){
+
+    public static void printMenu() {
         String blueColor = "\u001B[34m";
         String yellowColor = "\u001B[33m";
         String resetColor = "\u001B[0m";
-        System.out.println(blueColor+"*******************************************************************"+resetColor );
-        System.out.println(blueColor+"*"+resetColor+yellowColor+" Моля, изберете режим на игра като въведете 1 или 2 в конзолата. "+blueColor+"*");
-        System.out.println(blueColor+"*-----------------------------------------------------------------*");
-        System.out.println(blueColor+"*"+resetColor+"\t\t\t\t    1.За самостоятелна игра.\t\t\t\t\t  "+blueColor+"*");
-        System.out.println(blueColor+"*"+resetColor+"\t\t\t\t    2.Игра за двама. \t\t\t\t\t\t\t  "+blueColor+"*");
-        System.out.println(blueColor+"*******************************************************************"+resetColor);
+        System.out.println(blueColor + "*******************************************************************" + resetColor);
+        System.out.println(blueColor + "*" + resetColor + yellowColor + " Моля, изберете режим на игра като въведете 1 или 2 в конзолата. " + blueColor + "*");
+        System.out.println(blueColor + "*-----------------------------------------------------------------*");
+        System.out.println(blueColor + "*" + resetColor + "\t\t\t\t    1.За самостоятелна игра.\t\t\t\t\t  " + blueColor + "*");
+        System.out.println(blueColor + "*" + resetColor + "\t\t\t\t    2.Игра за двама. \t\t\t\t\t\t\t  " + blueColor + "*");
+        System.out.println(blueColor + "*******************************************************************" + resetColor);
     }
 
     public static byte askGameMod(Scanner scanner) {
@@ -99,7 +107,6 @@ public class Main {
                 numberOfPlayers = scanner.nextByte();
                 if (numberOfPlayers < 3 && numberOfPlayers > 0) {
                     break;
-
                 } else {
                     System.out.println("\u001B[31mНе валиден избор.\u001B[0m");
                 }
@@ -114,30 +121,28 @@ public class Main {
 
     public static String[][] readPlayersNames(Scanner scanner, byte numberOfPlayers) {
         String[][] playerDataMatrix = {{"Player1", "0"},
-                                       {"Player2", "0"}};
+                {"Player2", "0"}};
         for (int i = 1; i <= numberOfPlayers; i++) {
-            playerDataMatrix[i - 1][0] = checkUserNameInput(i, scanner, playerDataMatrix);
+            playerDataMatrix[i - 1][0] = usernameValidation(i, scanner, playerDataMatrix);
         }
 
         return playerDataMatrix;
     }
 
-    public static String checkUserNameInput(int gamerNumber, Scanner scanner, String[][] userData) {
-        System.out.println("\nМоля въведете име на ирач " + gamerNumber);
-        userData[gamerNumber - 1][0] = scanner.nextLine();
+    public static String usernameValidation(int gamerNumber, Scanner scanner, String[][] userData) {
         while (true) {
+            System.out.println("\nМоля въведете име на ирач " + gamerNumber);
+            userData[gamerNumber - 1][0] = scanner.nextLine().trim();
+
             if (userData[gamerNumber - 1][0].trim().isEmpty()) {
                 System.out.println("\u001B[31mГрешка: Невалидно име на играч " + gamerNumber + " \u001B[0m");
-                System.out.println("\nМоля въведете име на ирач " + gamerNumber);
-                userData[gamerNumber - 1][0] = scanner.nextLine();
-            } else if (userData[0][0].equals(userData[1][0])) {
+            } else if (userData[0][0].equals(userData[1][0].trim())) {
                 System.out.println("\u001B[31mГрешка: Това име вече съществува.!\u001B[0m");
-                System.out.println("\nМоля въведете име на ирач " + gamerNumber);
-                userData[gamerNumber - 1][0] = scanner.nextLine();
             } else {
                 break;
             }
         }
+
         return userData[gamerNumber - 1][0];
     }
 
@@ -159,15 +164,22 @@ public class Main {
 
     public static void printPaternGame(int error) {
         switch (error) {
-
-            case 0 -> System.out.println(readFile(".\\Files\\hangmanStartPatern.txt"));
-            case 1 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanFirstErrorPatern.txt"))+"\u001B[0m");
-            case 2 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanSecondErrorPatern.txt"))+"\u001B[0m");
-            case 3 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanThirdErrorPatern.txt"))+"\u001B[0m");
-            case 4 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanFoutrthErrorPatern.txt"))+"\u001B[0m");
-            case 5 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanFifthErrorPatern.txt"))+"\u001B[0m");
-            case 6 -> System.out.println("\u001B[32m"+(readFile(".\\Files\\hangmanSixthErrorPatern.txt"))+"\u001B[0m");
-            case 7 -> System.out.println("\u001B[31m"+(readFile(".\\Files\\hangmanSeventhErrorPatern.txt"))+"\u001B[0m");
+            case 0 ->
+                    System.out.println(readFile(".\\Files\\hangmanStartPatern.txt"));
+            case 1 ->
+                    System.out.println("\u001B[32m" + (readFile(".\\Files\\hangmanFirstErrorPatern.txt")) + "\u001B[0m");
+            case 2 ->
+                    System.out.println("\u001B[32m" + (readFile(".\\Files\\hangmanSecondErrorPatern.txt")) + "\u001B[0m");
+            case 3 ->
+                    System.out.println("\u001B[32m" + (readFile(".\\Files\\hangmanThirdErrorPatern.txt")) + "\u001B[0m");
+            case 4 ->
+                    System.out.println("\u001B[32m" + (readFile(".\\Files\\hangmanFoutrthErrorPatern.txt")) + "\u001B[0m");
+            case 5 ->
+                    System.out.println("\u001B[32m" + (readFile(".\\Files\\hangmanFifthErrorPatern.txt")) + "\u001B[0m");
+            case 6 ->
+                    System.out.println("\u001B[32m" + (readFile(".\\Files\\hangmanSixthErrorPatern.txt")) + "\u001B[0m");
+            case 7 ->
+                    System.out.println("\u001B[31m" + (readFile(".\\Files\\hangmanSeventhErrorPatern.txt")) + "\u001B[0m");
         }
     }
 
@@ -175,7 +187,7 @@ public class Main {
         boolean validInput = false;
         if (inputFromUser.length() < 2) {
             int asciValue = inputFromUser.charAt(0);
-            if (asciValue > 1039 && asciValue < 1104 && inputFromUser.charAt(0) != '_') {
+            if (asciValue > 1039 && asciValue < 1104) {
                 validInput = true;
             }
         }
@@ -183,15 +195,15 @@ public class Main {
         return validInput;
     }
 
-    public static char readFormUser(Scanner scanner, String userName) {
+    public static char readFormUser(Scanner scanner, String username) {
         String readSymbol = null;
         for (int i = 3; i >= 1; i--) {
-            System.out.println("\n" + userName + " въведете символ: ");
+            System.out.println("\n" + username + " въведете символ: ");
             readSymbol = scanner.next();
             if (validateInputFromUser(readSymbol)) {
                 break;
             } else {
-                System.out.println("\n" + userName + " въведохте невалиден вход оставащти опити " + (i - 1));
+                System.out.println("\n" + username + " въведохте невалиден вход оставащти опити " + (i - 1));
                 System.out.println("\u001B[42m\033[3mМоля използвайте само:\033[0m\u001B[0m А а Б б В в Г г Д д Е е Ж ж З з И и Й й К к Л л М м Н н О о П пР р С с Т т У у Ф ф Х х Ц ц Ч ч Ш ш Щ щ Ъ ъ Ь ь Ю ю Я я\n");
                 System.out.println("\u001B[41m\033[3mНе валидни входове:\033[0m\u001B[0m 0 1 2 3 4 5 6 7 8 9  ! \" № % & ' ( ) * + , - . / : ; < = > ? @ [ \\ ] ^ _ { | } ~");
             }
@@ -200,28 +212,36 @@ public class Main {
         return readSymbol.charAt(0);
     }
 
-    public static String searchSymbolInText(String cityName, String hidenCityName, char charFromUser) {
+    public static String saveCharactersEntered(String charEnteredBefore, char userInput) {
+        charEnteredBefore = charEnteredBefore + userInput;
+        return charEnteredBefore;
+    }
+
+
+    public static String searchSymbolInWord(String cityName, String hidenCityName, char charFromUser, boolean foundBefore) {
         String cityNameLowerCase = cityName.toLowerCase();
         char charFromUserLowerCase = Character.toLowerCase(charFromUser);
-        boolean foundBefore = checkForTypedCharacterFoundBefore(hidenCityName, charFromUser);
-
-        for (int i = 0; i < cityNameLowerCase.length(); i++) {
-            if (cityNameLowerCase.charAt(i) == charFromUserLowerCase && !foundBefore) {
-                hidenCityName = hidenCityName.substring(0, i) + cityName.charAt(i) + hidenCityName.substring(i + 1);
+        if (!foundBefore) {
+            for (int i = 0; i < cityNameLowerCase.length(); i++) {
+                if (cityNameLowerCase.charAt(i) == charFromUserLowerCase) {
+                    hidenCityName = hidenCityName.substring(0, i) + cityName.charAt(i) + hidenCityName.substring(i + 1);
+                }
             }
         }
 
         return hidenCityName;
     }
 
-    public static boolean checkForTypedCharacterFoundBefore(String hidenCityName, char charFromUser) {
+    public static boolean checkForTypedCharacterFoundBefore(String word, char charFromUser) {
         char charFromUserLowerCase = Character.toLowerCase(charFromUser);
-        String hidenCityNameLowerCase = hidenCityName.toLowerCase();
+        String wordLowerCase = word.toLowerCase();
 
         boolean foundBefore = false;
-        for (int i = 0; i < hidenCityName.length(); i++) {
-            if (hidenCityNameLowerCase.charAt(i) == charFromUserLowerCase) {
+        for (int i = 0; i < word.length(); i++) {
+            if (wordLowerCase.charAt(i) == charFromUserLowerCase) {
                 foundBefore = true;
+                System.out.println("\u001B[33mВъведохте същевтвуващ символ или е въведен от преди.\u001B[0m");
+                System.out.println("\u001B[35mВъведени символи:\u001B[0m " + word);
                 break;
             }
         }
@@ -243,57 +263,66 @@ public class Main {
 
         return match;
     }
-    public static void printInfoData(String []cityData){
+
+    public static int selectRandomPlayer(byte numberOfPlayers) {
+        int nextPlayer;
+        if (numberOfPlayers == 1) {
+            nextPlayer = 0;
+        } else {
+            nextPlayer = randomGenerator(1, 0);
+        }
+        return nextPlayer;
+    }
+
+    public static void printInfoData(String[] cityData) {
         String cityName = cityData[0];
         System.out.println("-------------------------------------------------------------------------------------------------------");
-        String messageEndGame = " е търсения град.!";
-        System.out.println(cityName + messageEndGame);
-        System.out.println("\u001B[1m\u001B[47m\u001B[30mВ град "+ cityName+ " живеят общо " + cityData[1]+" души, от които са "+cityData[2]+" мъже и "+cityData[3]+" жени.\033[0m\u001B[0m");
+        System.out.println(cityName + " е търсения град.!");
+        System.out.println("\u001B[1m\u001B[47m\u001B[30mВ град " + cityName + " живеят общо " + cityData[1] + " души, от които са " + cityData[2] + " мъже и " + cityData[3] + " жени.\033[0m\u001B[0m");
         System.out.println("-------------------------------------------------------------------------------------------------------");
     }
 
-    public static String gameLoop(String[][] players, Scanner scanner, String [] cityData,byte numberOfPlayers) {
+    public static String gameLoop(String[][] players, Scanner scanner, String[] cityData, byte numberOfPlayers) {
         int errorCount = 0;
-        int pleyerSelector = 0;
+        int playerSelector = selectRandomPlayer(numberOfPlayers);
         String cityName = cityData[0];
-        System.out.println(cityName);
-        String hidenText = creatingHiddenTextWithTheLengthOfTheText(cityName);
-        String winnerName = "";
-
-        while (!hidenText.equals(cityName)) {
+        String hidenWord = creatingHiddenTextWithTheLengthOfTheText(cityName);
+        String winnerName = null;
+        String characterEnteredBefore = "";
+        while (!hidenWord.equals(cityName)) {
             printPaternGame(errorCount);
-            System.out.println(hidenText);
-            char ch = readFormUser(scanner, players[pleyerSelector][0]);
-
-            boolean symbolFoundBefore = checkForTypedCharacterFoundBefore(hidenText, ch);
-            if (symbolFoundBefore) {
-                System.out.println("\u001B[33mВъведохте същевтвуващ символ\u001B[0m");
-            }
-
-            hidenText = searchSymbolInText(cityName, hidenText, ch);
-            if (hidenText.equals(cityName)) {
-                printInfoData(cityData);
-                System.out.println("\n" + players[pleyerSelector][0] + "\u001B[32m ти печелиш този рунд честито!!!\u001B[0m\n");
-                winnerName = players[pleyerSelector][0];
-                break;
-            } else if (errorCount >= 6) {
-                printPaternGame(errorCount + 1);
-                printInfoData(cityData);
-                System.out.println("\n" + players[pleyerSelector][0] + "\u001B[31m ти губиш този рунд.!!!\u001B[0m\n");
-                winnerName = null;
-                break;
-            }
-
-            boolean characterMatching = characterMatchingCheck(cityName, ch);
-            if (!characterMatching && !symbolFoundBefore) {
-                if (numberOfPlayers != 1) {
-                    pleyerSelector = (pleyerSelector == 1) ? 0 : 1;
-                }
+            System.out.println(hidenWord);
+            char inputFromUser = readFormUser(scanner, players[playerSelector][0]);
+            boolean foundBefore = checkForTypedCharacterFoundBefore(characterEnteredBefore, inputFromUser);
+            hidenWord = searchSymbolInWord(cityName, hidenWord, inputFromUser, foundBefore);
+            if (!characterMatchingCheck(cityName, inputFromUser) && !foundBefore) {
+                playerSelector = playerChange(numberOfPlayers, playerSelector);
                 errorCount++;
+            }
+            characterEnteredBefore = saveCharactersEntered(characterEnteredBefore, inputFromUser);
+
+            if (hidenWord.equals(cityName)) {
+                printInfoData(cityData);
+                winnerName = players[playerSelector][0];
+                System.out.println("\n" + winnerName + "\u001B[32m ти печелиш този рунд честито!!!\u001B[0m\n");
+                break;
+            } else if (errorCount > 6) {
+                printPaternGame(errorCount);
+                printInfoData(cityData);
+                System.out.println("\n" + players[playerSelector][0] + "\u001B[31m ти губиш този рунд.!!!\u001B[0m\n");
+                break;
             }
         }
 
         return winnerName;
+    }
+
+    public static int playerChange(byte numberOfPlayers, int playerSelector) {
+        if (numberOfPlayers != 1) {
+            playerSelector = (playerSelector == 1) ? 0 : 1;
+        }
+
+        return playerSelector;
     }
 
     public static boolean promptForGameContinuation(Scanner scanner) {
@@ -330,19 +359,21 @@ public class Main {
         String[][] score;
         while (true) {
             String[] cityData = getCityData(citiesData);
-            String roundWinner = gameLoop(players, scanner, cityData,numberOfPlayers);
+            System.out.println(cityData[0]);
+            String roundWinner = gameLoop(players, scanner, cityData, numberOfPlayers);
             score = saveScore(roundWinner, players);
+
             boolean gameContinuation = promptForGameContinuation(scanner);
             if (!gameContinuation) {
                 break;
             }
         }
+        System.out.println("--------------------------Резултат от играта-----------------------------");
+        printMatrix(score, numberOfPlayers);
         System.out.println("-------------------------------------------------------------------------");
-        printMatrix(score,numberOfPlayers);
+        System.out.println(printWinner(score, numberOfPlayers));
         System.out.println("-------------------------------------------------------------------------");
-        System.out.println(printWinner(score,numberOfPlayers));
-        System.out.println("-------------------------------------------------------------------------");
-        printEndLogo();
+        System.out.println(readFile(".\\Files\\endLogo.txt"));
     }
 
     public static String[][] saveScore(String winnerName, String[][] playersName) {
@@ -380,27 +411,21 @@ public class Main {
     public static void printMatrix(String[][] matrix, byte numberOfPlayers) {
         for (int i = 0; i < numberOfPlayers; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
-                System.out.print(matrix[i][j] + " ");
+                System.out.print(matrix[i][j] + " \" ");
             }
-            System.out.print("точки общо. ");
             System.out.println();
         }
-    }
-
-    public static void printStartLogo() {
-        System.out.println(readFile(".\\Files\\startLogo.txt"));
-    }
-
-    public static void printEndLogo() {
-        System.out.println(readFile(".\\Files\\endLogo.txt"));
     }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        String[][] cityData = readFromExel();
-        printStartLogo();
+        XSSFSheet sheet = readSheetFromExcel();
+
+        System.out.println(readFile(".\\Files\\startLogo.txt"));
+
         byte numberOfPlayers = askGameMod(scanner);
+        String[][] cityData = createArrayFromSheet(sheet);
         runHangmanGame(scanner, cityData, numberOfPlayers);
     }
 }
