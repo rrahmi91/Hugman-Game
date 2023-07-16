@@ -359,7 +359,7 @@ public class Main {
         String[][] score;
         while (true) {
             String[] cityData = getCityData(citiesData);
-            System.out.println(cityData[0]);
+            //1System.out.println(cityData[0]);
             String roundWinner = gameLoop(players, scanner, cityData, numberOfPlayers);
             score = saveScore(roundWinner, players);
 
